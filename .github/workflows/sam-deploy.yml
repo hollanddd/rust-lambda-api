@@ -1,7 +1,19 @@
 name: Hello World
-on: [push]
+on:
+  push:
+    branches:
+      - main
 jobs:
   Hello-World-Job:
     runs-on: codebuild-hello-aws-lambda-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
-      - run: echo "Hello World!"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@5
+      - uses: aws-actions/setup-sam@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: 0.9.1
+      - uses: zerj9/setup-cargo-lambda@v0.1.0
+      - run: sam build --beta-features --use-container
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name hello-aws-lambda --s3-bukcet aws-sam-cli-managed-default-samclisourcebucket-sbhluyave5px --capabilities CAPABILITY_IAM --region us-east-1
